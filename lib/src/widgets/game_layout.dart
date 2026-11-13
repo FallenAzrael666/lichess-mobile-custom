@@ -442,7 +442,8 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           // the board, while the move list stays above the top table.
           final maxBoardHeight = (constraints.maxHeight - 180.0).clamp(0.0, double.infinity);
           final maxBoardWidth = (constraints.maxWidth - 32.0).clamp(0.0, double.infinity);
-          final boardSize = maxBoardHeight < maxBoardWidth ? maxBoardHeight : maxBoardWidth;
+          final boardSize =
+              maxBoardHeight < maxBoardWidth ? maxBoardHeight : maxBoardWidth;
 
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
