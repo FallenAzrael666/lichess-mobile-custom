@@ -437,6 +437,53 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
         );
 
         if (orientation == Orientation.landscape) {
+          // In Android split-screen, a phone can report landscape constraints
+          // while the app only occupies a narrow pane. Keep the board and
+          // controls in one centered column in that compact landscape layout.
+          final isCompactLandscape = !isTablet && constraints.maxWidth < 700.0;
+
+          if (isCompactLandscape) {
+            final availableBoardHeight = constraints.maxHeight - 190.0;
+            final availableBoardWidth = constraints.maxWidth - 24.0;
+            final boardSize = availableBoardWidth < availableBoardHeight
+                ? availableBoardWidth
+                : availableBoardHeight;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: topTable(boardSize: boardSize),
+                    ),
+                  ),
+                  BoardWidget(
+                    size: boardSize,
+                    orientation: widget.orientation,
+                    controller: _controller!,
+                    onMove: rawOnMove,
+                    shapes: shapes,
+                    settings: settings,
+                    boardKey: widget.boardKey,
+                    boardOverlay: widget.boardOverlay,
+                    error: widget.errorMessage,
+                  ),
+                  Expanded(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: bottomTable(boardSize: boardSize),
+                    ),
+                  ),
+                  if (widget.userActionsBar != null) widget.userActionsBar!,
+                ],
+              ),
+            );
+          }
+
           final defaultBoardSize =
               constraints.biggest.shortestSide - (kTabletBoardTableSidePadding * 2);
           final sideWidth = constraints.biggest.longestSide - defaultBoardSize;
@@ -480,13 +527,11 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
                         )
                       else
                         const Spacer(),
-
                       if (widget.userActionsBar != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: widget.userActionsBar,
                         ),
-
                       bottomTable(boardSize: boardSize),
                     ],
                   ),
@@ -494,7 +539,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
               ],
             ),
           );
-        } else {
+        } else {{
           final defaultBoardSize = constraints.biggest.shortestSide;
           final maxHeight = constraints.maxHeight;
 
