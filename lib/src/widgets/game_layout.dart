@@ -557,7 +557,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
               ],
             ),
           );
-        }        } else {
+        } else {
           final defaultBoardSize = constraints.biggest.shortestSide;
           final maxHeight = constraints.maxHeight;
 
