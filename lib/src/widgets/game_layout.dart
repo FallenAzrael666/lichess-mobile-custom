@@ -446,7 +446,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
             // Split-screen panes can be shorter than the space normally
             // reserved for the surrounding player panels and action bar.
             // Never pass a negative board dimension into BoardWidget.
-            final availableBoardHeight = (constraints.maxHeight - 190.0).clamp(
+            final availableBoardHeight = (constraints.maxHeight - 165.0).clamp(
               0.0,
               constraints.maxHeight,
             );
