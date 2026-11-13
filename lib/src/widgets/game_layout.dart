@@ -440,18 +440,29 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           // On a phone in landscape, keep the board centered and put the game
           // actions directly below it. Player tables remain above and below
           // the board, while the move list stays above the top table.
-          final maxBoardHeight = (constraints.maxHeight - 180.0).clamp(0.0, double.infinity);
-          final maxBoardWidth = (constraints.maxWidth - 32.0).clamp(0.0, double.infinity);
+          final maxBoardHeight = (constraints.maxHeight - 180.0).clamp(
+            0.0,
+            double.infinity,
+          );
+          final maxBoardWidth = (constraints.maxWidth - 32.0).clamp(
+            0.0,
+            double.infinity,
+          );
           final boardSize =
               maxBoardHeight < maxBoardWidth ? maxBoardHeight : maxBoardWidth;
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
+                if (boardPrefs.moveListDisplay &&
+                    !widget.zenMode &&
+                    _hasMoveList)
                   _moveListContent(MoveListType.inline),
                 Expanded(
                   flex: widget.topTableFlex,
