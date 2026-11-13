@@ -440,7 +440,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           // On a phone in landscape, keep the board centered and put the game
           // actions directly below it. Player tables remain above and below
           // the board, while the move list stays above the top table.
-          final maxBoardHeight = (constraints.maxHeight - 180.0).clamp(
+          final maxBoardHeight = (constraints.maxHeight - 160.0).clamp(
             0.0,
             double.infinity,
           );
