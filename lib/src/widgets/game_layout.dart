@@ -436,65 +436,58 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           ),
         );
 
-        if (orientation == Orientation.landscape) {
-          final defaultBoardSize =
-              constraints.biggest.shortestSide - (kTabletBoardTableSidePadding * 2);
-          final sideWidth = constraints.biggest.longestSide - defaultBoardSize;
-          final boardSize = sideWidth >= 250
-              ? defaultBoardSize
-              : constraints.biggest.longestSide / kGoldenRatio - (kTabletBoardTableSidePadding * 2);
+        if (orientation == Orientation.landscape && !isTablet) {
+          // On a phone in landscape, keep the board centered and put the game
+          // actions directly below it. Player tables remain above and below
+          // the board, while the move list stays above the top table.
+          final maxBoardHeight = (constraints.maxHeight - 180.0).clamp(0.0, double.infinity);
+          final maxBoardWidth = (constraints.maxWidth - 32.0).clamp(0.0, double.infinity);
+          final boardSize = maxBoardHeight < maxBoardWidth ? maxBoardHeight : maxBoardWidth;
 
           return Padding(
-            padding: const EdgeInsets.all(kTabletBoardTableSidePadding),
-            child: Row(
-              textDirection: switch (boardPrefs.landscapeBoardPosition) {
-                .left => TextDirection.ltr,
-                .right => TextDirection.rtl,
-              },
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Column(
               mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                BoardWidget(
-                  size: boardSize,
-                  orientation: widget.orientation,
-                  controller: _controller!,
-                  onMove: rawOnMove,
-                  shapes: shapes,
-                  settings: settings,
-                  boardKey: widget.boardKey,
-                  boardOverlay: widget.boardOverlay,
-                  error: widget.errorMessage,
-                ),
-                const SizedBox(width: 16.0),
+                if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
+                  _moveListContent(MoveListType.inline),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      topTable(boardSize: boardSize),
-                      if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: _moveListContent(MoveListType.stacked),
-                          ),
-                        )
-                      else
-                        const Spacer(),
-
-                      if (widget.userActionsBar != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: widget.userActionsBar,
-                        ),
-
-                      bottomTable(boardSize: boardSize),
-                    ],
+                  flex: widget.topTableFlex,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: topTable(boardSize: boardSize),
+                  ),
+                ),
+                Center(
+                  child: BoardWidget(
+                    size: boardSize,
+                    orientation: widget.orientation,
+                    controller: _controller!,
+                    onMove: rawOnMove,
+                    shapes: shapes,
+                    settings: settings,
+                    boardKey: widget.boardKey,
+                    boardOverlay: widget.boardOverlay,
+                    error: widget.errorMessage,
+                  ),
+                ),
+                if (widget.userActionsBar != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: widget.userActionsBar,
+                  ),
+                Expanded(
+                  flex: widget.bottomTableFlex,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: bottomTable(boardSize: boardSize),
                   ),
                 ),
               ],
             ),
           );
-        } else {
+        } else if (orientation == Orientation.landscape) {
           final defaultBoardSize = constraints.biggest.shortestSide;
           final maxHeight = constraints.maxHeight;
 
