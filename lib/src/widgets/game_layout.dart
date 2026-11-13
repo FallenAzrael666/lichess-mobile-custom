@@ -500,57 +500,24 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
             ),
           );
         } else if (orientation == Orientation.landscape) {
-          final defaultBoardSize = constraints.biggest.shortestSide;
-          final maxHeight = constraints.maxHeight;
+          final defaultBoardSize =
+              constraints.biggest.shortestSide - (kTabletBoardTableSidePadding * 2);
+          final sideWidth = constraints.biggest.longestSide - defaultBoardSize;
+          final boardSize = sideWidth >= 250
+              ? defaultBoardSize
+              : constraints.biggest.longestSide / kGoldenRatio - (kTabletBoardTableSidePadding * 2);
 
-          final isShortScreen = isShortVerticalScreen(context);
-
-          final pocketsPadding = (pockets != null && (isTablet || isShortScreen))
-              ? _kAdditionalBoardSidePaddingForPockets
-              : 0;
-
-          double effectiveBoardSize =
-              (isTablet ? defaultBoardSize - kTabletBoardTableSidePadding * 2 : defaultBoardSize) -
-              pocketsPadding;
-
-          //Reserve vertical space for the top and bottom tables and the user actions bar if present.
-          final maxAllowedBoardSize = maxHeight - 180.0;
-          if (effectiveBoardSize > maxAllowedBoardSize) {
-            effectiveBoardSize = maxAllowedBoardSize;
-          }
-
-          if (isShortScreen) {
-            effectiveBoardSize -= 16;
-          }
-
-          return Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (boardPrefs.moveListDisplay &&
-                  _hasMoveList &&
-                  !isShortScreen &&
-                  !(isTablet && pockets != null))
-                if (widget.zenMode)
-                  // display empty move list to keep the layout consistent in zen mode
-                  const MoveList(type: MoveListType.inline, slicedMoves: [], currentMoveIndex: 0)
-                else
-                  _moveListContent(MoveListType.inline),
-              Expanded(
-                flex: widget.topTableFlex,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? kTabletBoardTableSidePadding : 12.0,
-                  ),
-                  child: topTable(boardSize: effectiveBoardSize),
-                ),
-              ),
-              Padding(
-                padding: isTablet
-                    ? const EdgeInsets.symmetric(horizontal: kTabletBoardTableSidePadding)
-                    : EdgeInsets.zero,
-                child: BoardWidget(
-                  size: effectiveBoardSize,
+          return Padding(
+            padding: const EdgeInsets.all(kTabletBoardTableSidePadding),
+            child: Row(
+              textDirection: switch (boardPrefs.landscapeBoardPosition) {
+                .left => TextDirection.ltr,
+                .right => TextDirection.rtl,
+              },
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                BoardWidget(
+                  size: boardSize,
                   orientation: widget.orientation,
                   controller: _controller!,
                   onMove: rawOnMove,
@@ -560,20 +527,37 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
                   boardOverlay: widget.boardOverlay,
                   error: widget.errorMessage,
                 ),
-              ),
-              Expanded(
-                flex: widget.bottomTableFlex,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? kTabletBoardTableSidePadding : 12.0,
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      topTable(boardSize: boardSize),
+                      if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 16.0),
+                            child: _moveListContent(MoveListType.stacked),
+                          ),
+                        )
+                      else
+                        const Spacer(),
+
+                      if (widget.userActionsBar != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: widget.userActionsBar,
+                        ),
+
+                      bottomTable(boardSize: boardSize),
+                    ],
                   ),
-                  child: bottomTable(boardSize: effectiveBoardSize),
                 ),
-              ),
-              if (widget.userActionsBar != null) widget.userActionsBar!,
-            ],
+              ],
+            ),
           );
-        } else {
+        }        } else {
           final defaultBoardSize = constraints.biggest.shortestSide;
           final maxHeight = constraints.maxHeight;
 
