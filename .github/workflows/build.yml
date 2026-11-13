@@ -38,7 +38,6 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
-      # paths-filter diffs with git on push events, so it needs the repository.
       - name: Checkout mobile code
         if: github.event_name == 'push'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -60,8 +59,7 @@ jobs:
               - 'pubspec.lock'
               - '.github/workflows/build.yml'
 
-      # The debug APK is only built on manual runs, to be uploaded: the app bundle already checks
-      # that the Android build compiles.
+      # Pull requests with Android changes also produce an installable debug APK.
       - name: Build matrix
         id: matrix
         env:
@@ -72,12 +70,10 @@ jobs:
           include='[]'
           if [ "$MANUAL" = true ] || [ "$ANDROID" = true ]; then
             include=$(jq -c '. + [{"target": "appbundle --debug", "os": "ubuntu-latest"}]' <<< "$include")
+            include=$(jq -c '. + [{"target": "apk --debug", "os": "ubuntu-latest"}]' <<< "$include")
           fi
           if [ "$MANUAL" = true ] || [ "$IOS" = true ]; then
             include=$(jq -c '. + [{"target": "ios --no-codesign", "os": "macos-26"}]' <<< "$include")
-          fi
-          if [ "$MANUAL" = true ]; then
-            include=$(jq -c '. + [{"target": "apk --debug", "os": "ubuntu-latest"}]' <<< "$include")
           fi
           echo "matrix={\"include\":$include}" >> "$GITHUB_OUTPUT"
 
@@ -86,13 +82,11 @@ jobs:
     needs: changes
     if: needs.changes.outputs.matrix != '{"include":[]}'
     runs-on: ${{ matrix.os }}
-    # A native build that hangs should fail fast rather than hold a runner.
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
     steps:
-      # The Gradle cache is keyed on the Gradle files, so the code must be checked out first.
       - name: Checkout mobile code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -120,7 +114,7 @@ jobs:
       - run: flutter build ${{ matrix.target }}
 
       - name: Upload debug APK
-        if: github.event_name == 'workflow_dispatch' && matrix.target == 'apk --debug'
+        if: matrix.target == 'apk --debug'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lichess-mobile-debug-apk
