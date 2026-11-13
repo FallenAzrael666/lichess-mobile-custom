@@ -448,8 +448,9 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
             0.0,
             double.infinity,
           );
-          final boardSize =
-              maxBoardHeight < maxBoardWidth ? maxBoardHeight : maxBoardWidth;
+          final boardSize = maxBoardHeight < maxBoardWidth
+              ? maxBoardHeight
+              : maxBoardWidth;
 
           return Padding(
             padding: const EdgeInsets.symmetric(
