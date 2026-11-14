@@ -9,6 +9,7 @@ on:
       - 'android/**'
       - 'ios/**'
       - 'pubspec.yaml'
+      - 'lib/src/widgets/game_layout.dart'
       - '.github/workflows/build.yml'
     branches:
       - main
@@ -53,6 +54,7 @@ jobs:
               - 'android/**'
               - 'pubspec.yaml'
               - 'pubspec.lock'
+              - 'lib/src/widgets/game_layout.dart'
               - '.github/workflows/build.yml'
             ios:
               - 'ios/**'
@@ -60,8 +62,7 @@ jobs:
               - 'pubspec.lock'
               - '.github/workflows/build.yml'
 
-      # The debug APK is only built on manual runs, to be uploaded: the app bundle already checks
-      # that the Android build compiles.
+      # Build a debug APK for manual runs and PRs that change the Android UI.
       - name: Build matrix
         id: matrix
         env:
@@ -76,7 +77,7 @@ jobs:
           if [ "$MANUAL" = true ] || [ "$IOS" = true ]; then
             include=$(jq -c '. + [{"target": "ios --no-codesign", "os": "macos-26"}]' <<< "$include")
           fi
-          if [ "$MANUAL" = true ]; then
+          if [ "$MANUAL" = true ] || [ "$ANDROID" = true ]; then
             include=$(jq -c '. + [{"target": "apk --debug", "os": "ubuntu-latest"}]' <<< "$include")
           fi
           echo "matrix={\"include\":$include}" >> "$GITHUB_OUTPUT"
@@ -120,7 +121,7 @@ jobs:
       - run: flutter build ${{ matrix.target }}
 
       - name: Upload debug APK
-        if: github.event_name == 'workflow_dispatch' && matrix.target == 'apk --debug'
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request') && matrix.target == 'apk --debug'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lichess-mobile-debug-apk
