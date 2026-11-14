@@ -119,7 +119,11 @@ jobs:
       - name: Code generation
         run: dart run build_runner build
 
-      - run: flutter build ${{ matrix.target }}
+      # Debug artifacts for users must target the real Lichess servers, not lichess.dev.
+      - run: >-
+          flutter build ${{ matrix.target }}
+          --dart-define=LICHESS_HOST=lichess.org
+          --dart-define=LICHESS_WS_HOST=socket.lichess.org
 
       - name: Upload debug APK
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.event_name == 'push') && matrix.target == 'apk --debug'
