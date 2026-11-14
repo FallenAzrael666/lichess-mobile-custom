@@ -18,6 +18,7 @@ on:
       - 'android/**'
       - 'ios/**'
       - 'pubspec.yaml'
+      - 'lib/src/widgets/game_layout.dart'
       - '.github/workflows/build.yml'
     branches:
       - main
