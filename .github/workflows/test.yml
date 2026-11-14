@@ -59,7 +59,6 @@ jobs:
         run: |
           mapfile -t lib_files < <(find lib/src -name "*.dart" -not \( -name "*.*freezed.dart" -o -name "*.*g.dart" -o -name "*lichess_icons.dart" \) )
           mapfile -t test_files < <(find test -name "*.dart" -not \( -name "*.*freezed.dart" -o -name "*.*g.dart" \) )
-          dart format --output=show lib/src/widgets/game_layout.dart
           dart format --output=none --set-exit-if-changed "${lib_files[@]}"
           dart format --output=none --set-exit-if-changed "${test_files[@]}"
         # run: dart format --output=none --set-exit-if-changed .
