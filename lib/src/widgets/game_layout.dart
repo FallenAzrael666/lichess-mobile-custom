@@ -436,7 +436,10 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           ),
         );
 
-        if (orientation == Orientation.landscape && !isTablet) {
+        // Use the centered phone layout only when there is enough vertical room.
+        // In compact multi-window layouts, keep the original side-by-side layout
+        // so the board and player controls do not overflow or collapse.
+        if (orientation == Orientation.landscape && !isTablet && constraints.maxHeight >= 300.0) {
           // On a phone in landscape, keep the board centered and put the game
           // actions directly below it. Player tables remain above and below
           // the board, while the move list stays above the top table.
