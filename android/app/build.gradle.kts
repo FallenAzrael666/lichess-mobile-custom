@@ -63,7 +63,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
         debug {
-            applicationIdSuffix = ".debug"
+            // Keep the original application ID for the installable debug APK.
         }
     }
 
