@@ -440,7 +440,8 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           // On phones, keep the board and its action bar centered as one column.
           // The side columns retain both player tables and the optional move list.
           final centerColumnWidth = (constraints.maxHeight * 0.88)
-              .clamp(0.0, constraints.maxWidth * 0.48);
+              .clamp(0.0, constraints.maxWidth * 0.48)
+              .toDouble();
 
           return Padding(
             padding: const EdgeInsets.all(8.0),
