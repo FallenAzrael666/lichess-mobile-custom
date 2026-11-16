@@ -172,6 +172,18 @@ void main() {
           Size(expectedBoardSize, expectedBoardSize),
           reason: 'Board size should be $expectedBoardSize on $surface',
         );
+      } else if (!isTablet) {
+        final boardCenter = tester.getCenter(find.byType(Chessboard));
+        expect(
+          boardCenter.dx,
+          closeTo(surface.width / 2, 1.0),
+          reason: 'Phone landscape board should be centered on $surface',
+        );
+        expect(
+          boardSize.width,
+          lessThanOrEqualTo(surface.height),
+          reason: 'Phone landscape board should fit the available height on $surface',
+        );
       } else {
         final topTableSize = tester.getSize(find.byKey(const ValueKey('top_table')));
         final bottomTableSize = tester.getSize(find.byKey(const ValueKey('bottom_table')));
