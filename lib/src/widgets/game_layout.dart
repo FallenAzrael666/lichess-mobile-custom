@@ -436,6 +436,75 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           ),
         );
 
+        if (orientation == Orientation.landscape && !isTablet) {
+          // On phones, keep the board and its action bar centered as one column.
+          // The side columns retain both player tables and the optional move list.
+          final centerColumnWidth = (constraints.maxHeight * 0.88)
+              .clamp(0.0, constraints.maxWidth * 0.48);
+
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      topTable(boardSize: constraints.maxHeight),
+                      if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: _moveListContent(MoveListType.stacked),
+                          ),
+                        )
+                      else
+                        const Spacer(),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: centerColumnWidth,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, boardConstraints) {
+                            final boardSize = boardConstraints.biggest.shortestSide;
+                            return Center(
+                              child: BoardWidget(
+                                size: boardSize,
+                                orientation: widget.orientation,
+                                controller: _controller!,
+                                onMove: rawOnMove,
+                                shapes: shapes,
+                                settings: settings,
+                                boardKey: widget.boardKey,
+                                boardOverlay: widget.boardOverlay,
+                                error: widget.errorMessage,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      if (widget.userActionsBar != null)
+                        widget.userActionsBar!,
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: bottomTable(boardSize: constraints.maxHeight),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         if (orientation == Orientation.landscape) {
           final defaultBoardSize =
               constraints.biggest.shortestSide - (kTabletBoardTableSidePadding * 2);
