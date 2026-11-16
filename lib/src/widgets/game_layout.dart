@@ -453,7 +453,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      topTable(boardSize: constraints.maxHeight),
+                      topTable(boardSize: centerColumnWidth),
                       if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
                         Expanded(
                           child: Padding(
@@ -498,7 +498,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
                 ),
                 Expanded(
                   child: Center(
-                    child: bottomTable(boardSize: constraints.maxHeight),
+                    child: bottomTable(boardSize: centerColumnWidth),
                   ),
                 ),
               ],
