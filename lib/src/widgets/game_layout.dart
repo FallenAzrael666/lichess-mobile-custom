@@ -442,6 +442,13 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
           final centerColumnWidth = (constraints.maxHeight * 0.96)
               .clamp(0.0, constraints.maxWidth * 0.48)
               .toDouble();
+          // Match pocket piece sizing to the board's height-constrained size,
+          // not the wider center column. The action bar uses the standard bottom-bar height.
+          final boardSize = (constraints.maxHeight -
+                  16.0 -
+                  (widget.userActionsBar != null ? kBottomBarHeight : 0.0))
+              .clamp(0.0, centerColumnWidth)
+              .toDouble();
 
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -453,7 +460,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      topTable(boardSize: centerColumnWidth),
+                      topTable(boardSize: boardSize),
                       if (boardPrefs.moveListDisplay && !widget.zenMode && _hasMoveList)
                         Expanded(
                           child: Padding(
@@ -498,7 +505,7 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
                 ),
                 Expanded(
                   child: Center(
-                    child: bottomTable(boardSize: centerColumnWidth),
+                    child: bottomTable(boardSize: boardSize),
                   ),
                 ),
               ],
