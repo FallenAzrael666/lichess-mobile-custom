@@ -116,6 +116,53 @@ void main() {
     }
   }, variant: kPlatformVariant);
 
+  testWidgets('phone landscape keeps the action bar directly below the centered board', (
+    WidgetTester tester,
+  ) async {
+    const surface = Size(915, 412);
+    final app = await makeTestProviderScope(
+      tester,
+      child: const MaterialApp(
+        home: GameLayout(
+          orientation: Side.white,
+          boardParams: GameBoardParams.readonly(
+            variant: Variant.standard,
+            position: Chess.initial,
+          ),
+          topTable: Row(
+            key: ValueKey('top_table'),
+            children: [Text('Top table')],
+          ),
+          bottomTable: Row(
+            key: ValueKey('bottom_table'),
+            children: [Text('Bottom table')],
+          ),
+          userActionsBar: SizedBox(
+            key: ValueKey('actions_bar'),
+            height: 44,
+            child: Text('Actions'),
+          ),
+        ),
+      ),
+      surfaceSize: surface,
+    );
+    await tester.pumpWidget(app);
+
+    expect(tester.takeException(), isNull, reason: 'Phone landscape must not overflow.');
+
+    final boardRect = tester.getRect(find.byType(Chessboard));
+    final actionsRect = tester.getRect(find.byKey(const ValueKey('actions_bar')));
+
+    expect(boardRect.center.dx, closeTo(surface.width / 2, 1.0));
+    expect(boardRect.width, greaterThan(surface.height * 0.8));
+    expect(boardRect.bottom, closeTo(actionsRect.top, 1.0));
+    expect(actionsRect.height, 44);
+    expect(find.byKey(const ValueKey('top_table')), findsOneWidget);
+    expect(find.byKey(const ValueKey('bottom_table')), findsOneWidget);
+    expect(tester.getRect(find.byKey(const ValueKey('top_table'))).overlaps(boardRect), isFalse);
+    expect(tester.getRect(find.byKey(const ValueKey('bottom_table'))).overlaps(boardRect), isFalse);
+  }, variant: kPlatformVariant);
+
   testWidgets('board size and table side size should be harmonious on all surfaces', (
     WidgetTester tester,
   ) async {
@@ -171,6 +218,18 @@ void main() {
           boardSize,
           Size(expectedBoardSize, expectedBoardSize),
           reason: 'Board size should be $expectedBoardSize on $surface',
+        );
+      } else if (!isTablet) {
+        final boardCenter = tester.getCenter(find.byType(Chessboard));
+        expect(
+          boardCenter.dx,
+          closeTo(surface.width / 2, 1.0),
+          reason: 'Phone landscape board should be centered on $surface',
+        );
+        expect(
+          boardSize.width,
+          lessThanOrEqualTo(surface.height),
+          reason: 'Phone landscape board should fit the available height on $surface',
         );
       } else {
         final topTableSize = tester.getSize(find.byKey(const ValueKey('top_table')));

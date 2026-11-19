@@ -1,7 +1,6 @@
 name: Builds
 
-# Manual runs build everything. Automated runs only build the platforms whose native code changed;
-# a pubspec change can bump a plugin's native code, so it builds both.
+# Manual runs build everything. PRs targeting the clean rebuild base also build a downloadable Android APK.
 on:
   workflow_dispatch:
   push:
@@ -11,15 +10,17 @@ on:
       - 'pubspec.yaml'
       - '.github/workflows/build.yml'
     branches:
-      - main
+      - rebuild/from-original-source
   pull_request:
     paths:
       - 'android/**'
       - 'ios/**'
       - 'pubspec.yaml'
+      - 'lib/**'
+      - 'test/**'
       - '.github/workflows/build.yml'
     branches:
-      - main
+      - original-source-base
 
 # Cancel superseded PR runs so only the latest pushed commit is actually built.
 # Pushes to main are never cancelled.
@@ -53,6 +54,8 @@ jobs:
               - 'android/**'
               - 'pubspec.yaml'
               - 'pubspec.lock'
+              - 'lib/**'
+              - 'test/**'
               - '.github/workflows/build.yml'
             ios:
               - 'ios/**'
@@ -60,8 +63,7 @@ jobs:
               - 'pubspec.lock'
               - '.github/workflows/build.yml'
 
-      # The debug APK is only built on manual runs, to be uploaded: the app bundle already checks
-      # that the Android build compiles.
+      # Build a downloadable debug APK for PR validation as well as manual runs.
       - name: Build matrix
         id: matrix
         env:
@@ -76,7 +78,7 @@ jobs:
           if [ "$MANUAL" = true ] || [ "$IOS" = true ]; then
             include=$(jq -c '. + [{"target": "ios --no-codesign", "os": "macos-26"}]' <<< "$include")
           fi
-          if [ "$MANUAL" = true ]; then
+          if [ "$MANUAL" = true ] || { [ "${{ github.event_name }}" = pull_request ] && [ "$ANDROID" = true ]; }; then
             include=$(jq -c '. + [{"target": "apk --debug", "os": "ubuntu-latest"}]' <<< "$include")
           fi
           echo "matrix={\"include\":$include}" >> "$GITHUB_OUTPUT"
@@ -117,10 +119,22 @@ jobs:
       - name: Code generation
         run: dart run build_runner build
 
-      - run: flutter build ${{ matrix.target }}
+      - name: Build with production Lichess endpoints
+        env:
+          WS_SECRET: ${{ secrets.WS_SECRET }}
+        run: |
+          defines=(
+            --dart-define=cronetHttpNoPlay=true
+            --dart-define=LICHESS_HOST=lichess.org
+            --dart-define=LICHESS_WS_HOST=socket.lichess.org
+          )
+          if [ -n "$WS_SECRET" ]; then
+            defines+=("--dart-define=LICHESS_WS_SECRET=$WS_SECRET")
+          fi
+          flutter build ${{ matrix.target }} "${defines[@]}"
 
       - name: Upload debug APK
-        if: github.event_name == 'workflow_dispatch' && matrix.target == 'apk --debug'
+        if: matrix.target == 'apk --debug' && (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lichess-mobile-debug-apk
