@@ -444,11 +444,12 @@ class _GameLayoutState() extends ConsumerState<GameLayout> {
               .toDouble();
           // Match pocket piece sizing to the board's height-constrained size,
           // not the wider center column. The action bar uses the standard bottom-bar height.
-          final boardSize = (constraints.maxHeight -
-                  16.0 -
-                  (widget.userActionsBar != null ? kBottomBarHeight : 0.0))
-              .clamp(0.0, centerColumnWidth)
-              .toDouble();
+          final boardSize =
+              (constraints.maxHeight -
+                      16.0 -
+                      (widget.userActionsBar != null ? kBottomBarHeight : 0.0))
+                  .clamp(0.0, centerColumnWidth)
+                  .toDouble();
 
           return Padding(
             padding: const EdgeInsets.all(8.0),
