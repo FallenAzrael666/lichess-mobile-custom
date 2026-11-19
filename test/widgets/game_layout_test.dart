@@ -148,10 +148,13 @@ void main() {
     );
     await tester.pumpWidget(app);
 
+    expect(tester.takeException(), isNull, reason: 'Phone landscape must not overflow.');
+
     final boardRect = tester.getRect(find.byType(Chessboard));
     final actionsRect = tester.getRect(find.byKey(const ValueKey('actions_bar')));
 
     expect(boardRect.center.dx, closeTo(surface.width / 2, 1.0));
+    expect(boardRect.width, greaterThan(surface.height * 0.8));
     expect(boardRect.bottom, closeTo(actionsRect.top, 1.0));
     expect(actionsRect.height, 44);
     expect(find.byKey(const ValueKey('top_table')), findsOneWidget);
