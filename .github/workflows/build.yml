@@ -119,7 +119,19 @@ jobs:
       - name: Code generation
         run: dart run build_runner build
 
-      - run: flutter build ${{ matrix.target }}
+      - name: Build with production Lichess endpoints
+        env:
+          WS_SECRET: ${{ secrets.WS_SECRET }}
+        run: |
+          defines=(
+            --dart-define=cronetHttpNoPlay=true
+            --dart-define=LICHESS_HOST=lichess.org
+            --dart-define=LICHESS_WS_HOST=socket.lichess.org
+          )
+          if [ -n "$WS_SECRET" ]; then
+            defines+=("--dart-define=LICHESS_WS_SECRET=$WS_SECRET")
+          fi
+          flutter build ${{ matrix.target }} "${defines[@]}"
 
       - name: Upload debug APK
         if: matrix.target == 'apk --debug' && (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')
