@@ -192,6 +192,7 @@ class _AppState() extends ConsumerState<Application> {
 
     return MaterialApp(
       navigatorKey: _navigatorKey,
+      debugShowCheckedModeBanner: false,
       // [AppLocalizations.localizationsDelegates] cannot be used: it is generated with the
       // `flutter_localizations` delegates, which localize the Flutter material and cupertino
       // libraries, not the `material_ui` and `cupertino_ui` ones the app is built with.
